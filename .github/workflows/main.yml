@@ -10,7 +10,7 @@ jobs:
       - name: Checkout Kernel Source
         uses: actions/checkout@v4
         with:
-          repository: quadro-kal/moonkara-gale-kernel
+          repository: quadro-kal/Priv-moonkara-gale-kernel
           ref: moonkara
           fetch-depth: 1
 
