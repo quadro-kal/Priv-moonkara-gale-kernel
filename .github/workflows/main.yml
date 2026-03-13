@@ -1,0 +1,56 @@
+name: Moonkara Kernel Compilation (Static KSU)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v4
+        with:
+          repository: quadro-kal/moonkara_gale_kernel
+          ref: moonkara
+          fetch-depth: 1
+
+      - name: Initialize Build Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3 \
+               gcc clang libssl-dev repo flex bison crossbuild-essential-arm64 crossbuild-essential-armel
+
+      - name: Provision AOSP Clang 12 Toolchain
+        run: |
+          git clone --depth=1 https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r416183b.git $GITHUB_WORKSPACE/toolchains/clang
+
+      - name: Execute Kernel Compilation
+        run: |
+          export PATH=$GITHUB_WORKSPACE/toolchains/clang/bin:$PATH
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export CC=clang
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          
+          DEFCONFIG_NAME="gale_defconfig"
+          
+          make O=out ARCH=arm64 $DEFCONFIG_NAME
+          
+          make -j$(nproc --all) O=out \
+               ARCH=arm64 \
+               CC=clang \
+               CROSS_COMPILE=aarch64-linux-gnu- \
+               CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+               LLVM=1 LLVM_IAS=1
+
+      - name: Extract and Upload Compiled Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Moonbeam-AOSP-Artifacts
+          path: |
+            out/arch/arm64/boot/Image
+            out/arch/arm64/boot/Image.gz
+            out/arch/arm64/boot/Image.gz-dtb
+            out/arch/arm64/boot/dts/
+            
