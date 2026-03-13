@@ -22,7 +22,8 @@ jobs:
 
       - name: Provision AOSP Clang 12 Toolchain
         run: |
-          git clone --depth=1 https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r416183b.git $GITHUB_WORKSPACE/toolchains/clang
+          # Beralih ke infrastruktur GitHub LineageOS untuk menghindari restriksi akses GitLab
+          git clone --depth=1 https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b.git $GITHUB_WORKSPACE/toolchains/clang
 
       - name: Execute Kernel Compilation
         run: |
